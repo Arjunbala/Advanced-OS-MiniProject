@@ -1,6 +1,6 @@
 # batch_task.c
-Depending on argument passed in (0 for buffered I/O and 1 for direct I/O), the program writes a 10MB file sequentially in a child process. The parent process then reads it.
-gcc -o batch_task batch_task.c -DRANDOM_STRING_SIZE='4096'
+Depending on argument passed in (0 for buffered I/O and 1 for direct I/O), the program writes a 10MB file sequentially in a child process. The parent process then reads it. \\
+gcc -o batch_task batch_task.c -DRANDOM_STRING_SIZE='4096' \\
 ./batch_task 0
 
 # batch_task_caching_benefits.c
