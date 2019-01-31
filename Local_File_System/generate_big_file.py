@@ -16,4 +16,4 @@ def generate_big_random_letters(filename,size):
     pass
 
 if __name__ == '__main__':
-    generate_big_random_letters("temp_big_letters_direct.txt",1024*1024*10)
+    generate_big_random_letters("temp_big_letters_direct.txt", sys.argv[1])

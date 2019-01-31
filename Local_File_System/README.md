@@ -22,3 +22,10 @@ gcc -o batch_task_random_writes batch_task_random_writes.c -DWRITE_SIZE='512'
 This program writes to random offsets in a file while doing an fsync at the end of each write.\
 gcc -o batch_task_random_writes_fsync batch_task_random_writes_fsync.c -DWRITE_SIZE='512'
 ./batch_task_random_writes_fsync
+
+# batch_task_random_reads.c
+This program reads a file using buffered and direct I/O and compares the read bandwidths.\
+gcc -o batch_task_random_reads batch_task_random_reads.c -DREAD_SIZE='512'
+./batch_task_random_reads\
+Ensure that you run the below command below running the test to clear any buffer caches -\
+sudo sh -c "echo  3 > /proc/sys/vm/drop_caches"
