@@ -12,7 +12,6 @@
 #define CLI_ARG_COUNT 1 // Number of Command line arguments
 #define DIRECT_IO_SPEC_POS 1 // Position of direct i/o spec in CL arguments
 
-#define RANDOM_STRING_SIZE 1024
 #define INPUT_FILE_SIZE_KB 1024*10 //10Mb
 
 int modify_file_permissions(char *fileName, char *mode) {
@@ -24,18 +23,6 @@ int modify_file_permissions(char *fileName, char *mode) {
     }
 }
 
-void drop_cache() {
-    sync();
-    int fd;
-    char *data = "3";
-    fd = open("/proc/sys/vm/drop_caches", O_WRONLY);
-    int size = write(fd, data, sizeof(data));
-    if (size <= 0) {
-        printf("Write error - %d(%s)\n", errno, strerror(errno));
-    }
-    close(fd);
-}
-
 int main(int argc, char *argv[]) {
     if(argc != CLI_ARG_COUNT + 1) {
         printf("Program accepts %d argument(s)\n", CLI_ARG_COUNT);
@@ -43,7 +30,7 @@ int main(int argc, char *argv[]) {
     }
 
     int useDirectIO = atoi(argv[1]);
-    printf("Should use Direct I/O - %d\n", useDirectIO);
+    printf("Should use Direct I/O - %d ::string size = %d\n", useDirectIO, RANDOM_STRING_SIZE);
 
     pid_t childPid = fork();    
     if(childPid == 0) {
@@ -71,9 +58,6 @@ int main(int argc, char *argv[]) {
         unsigned long long totalBytes = 0;
         for(int i=0;i<INPUT_FILE_SIZE_KB;i++) {
             ssize_t written = write(fd, buffer, sizeof(buffer));
-            /*if(!useDirectIO) {
-                fsync(fd);
-            }*/
             if(written == -1) {
                 printf("write error. status=%s(%d)\n", strerror(errno), errno);
                 exit(0);
@@ -90,14 +74,12 @@ int main(int argc, char *argv[]) {
         printf("Avg. Disk Bandwidth = %lf MBps\n", bandwidth);
         printf("\n\n");
         modify_file_permissions("testfile.txt", "777");
-        drop_cache();
     } else {
         // This is parent process.
         // Wait for child process to complete and then read from file.
         int returnStatus;
         waitpid(childPid, &returnStatus, 0);
         printf("Starting work in parent process\n");
-        drop_cache();
         static char buffer[RANDOM_STRING_SIZE] __attribute__ ((__aligned__ (RANDOM_STRING_SIZE)));
         int fd;
         clock_t start, end;

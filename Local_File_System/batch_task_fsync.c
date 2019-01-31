@@ -62,6 +62,9 @@ int main(int argc, char *argv[]) {
                 printf("write error. status=%s(%d)\n", strerror(errno), errno);
                 exit(0);
             }
+            if(!useDirectIO) {
+                fsync(fd);
+            }
             totalBytes += written;
         }
         close(fd);
