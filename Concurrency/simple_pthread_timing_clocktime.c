@@ -1,5 +1,8 @@
 #include <pthread.h>
 #include <stdio.h>
+#include <time.h>
+
+#define SEC_TO_NS 1000000000
 
 pthread_mutex_t lock;
 pthread_spinlock_t spinlock;
@@ -47,8 +50,9 @@ int main(int argc, char *argv[]) {
 
     struct thread_args t1_args = {1, sleep_time_usec, useSpinlock};
     struct thread_args t2_args = {2, sleep_time_usec, useSpinlock};
-    clock_t start,end;
-    start = clock();
+    struct timespec start,end;
+    
+    clock_gettime(CLOCK_REALTIME, &start);
     if (pthread_create(&sleep_thread_1, NULL, sleep_routine, &t1_args)) {
         printf("Error in creating sleep thread\n");
 	return 1;
@@ -66,9 +70,9 @@ int main(int argc, char *argv[]) {
         printf("Error joining thread\n");
         return 1;
     }
+    clock_gettime(CLOCK_REALTIME, &end);
 
-    end = clock();
-    double cpu_time_used = ((double) (end - start));
-    printf("CPU time used = %lf\n", cpu_time_used);
+    unsigned long long wall_time_ns = (unsigned long long) ((end.tv_sec - start.tv_sec)*SEC_TO_NS) + (end.tv_nsec - start.tv_nsec);
+    printf("Wall time used = %lld\n", wall_time_ns);
     return 0;
 }
