@@ -1,3 +1,5 @@
+import sys
+
 def generate_big_random_letters(filename,size):
     """
     generate big random letters/alphabets to a file
@@ -16,4 +18,4 @@ def generate_big_random_letters(filename,size):
     pass
 
 if __name__ == '__main__':
-    generate_big_random_letters("temp_big_letters_direct.txt", sys.argv[1])
+    generate_big_random_letters(sys.argv[1], int(sys.argv[2]))
