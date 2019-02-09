@@ -12,7 +12,8 @@
 #define CLI_ARG_COUNT 1 // Number of Command line arguments
 #define DIRECT_IO_SPEC_POS 1 // Position of direct i/o spec in CL arguments
 
-#define INPUT_FILE_SIZE_KB 1024*10 //10Mb
+#define INPUT_FILE_SIZE_KB 1024*1024 //10Mb
+#define KB_TO_BYTES 1024
 
 int modify_file_permissions(char *fileName, char *mode) {
     int i;
@@ -48,7 +49,7 @@ int main(int argc, char *argv[]) {
         if(useDirectIO) {
             fd = open("testfile.txt", O_RDWR | O_DIRECT | O_CREAT | O_APPEND | O_TRUNC);
         } else {
-            fd = open("testfile.txt", O_WRONLY | O_APPEND | O_CREAT | O_TRUNC);
+            fd = open("testfile.txt", O_WRONLY | O_APPEND | O_CREAT);
         }
         if(fd < 0) {
             printf("File open failed. status=%s\n", strerror(errno));
@@ -56,7 +57,7 @@ int main(int argc, char *argv[]) {
         }
 
         unsigned long long totalBytes = 0;
-        for(int i=0;i<INPUT_FILE_SIZE_KB;i++) {
+        for(unsigned long long i=0;i<INPUT_FILE_SIZE_KB*KB_TO_BYTES/sizeof(buffer);i++) {
             ssize_t written = write(fd, buffer, sizeof(buffer));
             if(written == -1) {
                 printf("write error. status=%s(%d)\n", strerror(errno), errno);

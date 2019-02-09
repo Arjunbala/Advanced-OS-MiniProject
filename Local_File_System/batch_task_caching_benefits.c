@@ -4,6 +4,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
+#include<sys/stat.h>
 #include<sys/types.h>
 #include<sys/wait.h>
 #include<time.h>
@@ -12,7 +13,8 @@
 #define CLI_ARG_COUNT 1 // Number of Command line arguments
 #define DIRECT_IO_SPEC_POS 1 // Position of direct i/o spec in CL arguments
 
-#define INPUT_FILE_SIZE_KB 1024*10 //10Mb
+#define KB_TO_BYTES 1024
+#define SEC_TO_NS 1000000000
 
 int modify_file_permissions(char *fileName, char *mode) {
     int i;
@@ -41,9 +43,9 @@ int main(int argc, char *argv[]) {
         memset(buffer, 'a', sizeof(buffer)); // Filling with all 'a's works as random for our purpose
         buffer[RANDOM_STRING_SIZE-1] = '\0';
 
-        clock_t start, end;
-        double cpu_time_used;
-        start = clock();
+        struct timespec start,end;
+        clock_gettime(CLOCK_REALTIME, &start);
+
         int fd;
         if(useDirectIO) {
             fd = open("testfile.txt", O_RDWR | O_DIRECT | O_CREAT | O_APPEND | O_TRUNC);
@@ -56,7 +58,7 @@ int main(int argc, char *argv[]) {
         }
 
         unsigned long long totalBytes = 0;
-        for(int i=0;i<INPUT_FILE_SIZE_KB;i++) {
+        for(int i=0;i<INPUT_FILE_SIZE_KB*KB_TO_BYTES/sizeof(buffer);i++) {
             ssize_t written = write(fd, buffer, sizeof(buffer));
             if(written == -1) {
                 printf("write error. status=%s(%d)\n", strerror(errno), errno);
@@ -65,12 +67,13 @@ int main(int argc, char *argv[]) {
             totalBytes += written;
         }
         close(fd);
-        end = clock();
-        cpu_time_used = ((double) (end - start))/CLOCKS_PER_SEC;
-        double bandwidth = (double) totalBytes/(1024*1024*cpu_time_used);
+        clock_gettime(CLOCK_REALTIME, &end);
+        unsigned long long wall_time_ns = (unsigned long long) ((end.tv_sec - start.tv_sec)*SEC_TO_NS) + (end.tv_nsec - start.tv_nsec);
+        double wall_time_sec = wall_time_ns*1.0/SEC_TO_NS;
+        double bandwidth = (double) totalBytes/(1024*1024*wall_time_sec);
         printf("---- Writes information ----\n");
         printf("Total data written = %lld bytes\n", totalBytes);
-        printf("Total time taken = %lf seconds\n", cpu_time_used);
+        printf("Total time taken = %lf seconds\n", wall_time_sec);
         printf("Avg. Disk Bandwidth = %lf MBps\n", bandwidth);
         printf("\n\n");
         modify_file_permissions("testfile.txt", "777");
@@ -82,9 +85,8 @@ int main(int argc, char *argv[]) {
         printf("Starting work in parent process\n");
         static char buffer[RANDOM_STRING_SIZE] __attribute__ ((__aligned__ (RANDOM_STRING_SIZE)));
         int fd;
-        clock_t start, end;
-        double cpu_time_used;
-        start = clock();
+        struct timespec start, end;
+        clock_gettime(CLOCK_REALTIME, &start);
         fd = open("testfile.txt", O_RDONLY);
         unsigned long long total_read = 0;
         int n_read;
@@ -96,12 +98,13 @@ int main(int argc, char *argv[]) {
             total_read = total_read + n_read;
         }
         close(fd);
-        end = clock();
-        cpu_time_used = ((double) (end - start))/CLOCKS_PER_SEC;
-        double bandwidth = (double) total_read/(1024*1024*cpu_time_used);
+        clock_gettime(CLOCK_REALTIME, &end);
+        unsigned long long wall_time_ns = (unsigned long long) ((end.tv_sec - start.tv_sec)*SEC_TO_NS) + (end.tv_nsec - start.tv_nsec);
+        double wall_time_sec = wall_time_ns*1.0/SEC_TO_NS;
+        double bandwidth = (double) total_read/(1024*1024*wall_time_sec);
         printf("---- Reads information ----\n");
         printf("Total data written = %lld bytes\n", total_read);
-        printf("Total time taken = %lf seconds\n", cpu_time_used);
+        printf("Total time taken = %lf seconds\n", wall_time_sec);
         printf("Avg. Disk Bandwidth = %lf MBps\n", bandwidth);
     }
 }

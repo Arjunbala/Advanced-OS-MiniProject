@@ -1,0 +1,14 @@
+.. Starting with file size for buffered = 1073741824 bytes ..
+.. Starting with file size for direct = 1073741824 bytes ..
+---- Buffered Stats ----
+Total data written = 81920000 bytes
+Total time taken = 246.513076 seconds
+Avg. Disk Bandwidth = 0.316920 MBps
+
+
+---- Direct Stats ----
+Total data written = 81920000 bytes
+Total time taken = 267.246778 seconds
+Avg. Disk Bandwidth = 0.292333 MBps
+
+

@@ -1,0 +1,14 @@
+Should use Direct I/O - 0
+Starting work in child process
+---- Writes information ----
+Total data written = 104857600 bytes
+Total time taken = 2497.721362 seconds
+Avg. Disk Bandwidth = 0.040036 MBps
+
+
+Should use Direct I/O - 0
+Starting work in parent process
+---- Reads information ----
+Total data written = 104857600 bytes
+Total time taken = 0.067338 seconds
+Avg. Disk Bandwidth = 1485.052802 MBps
